@@ -23,18 +23,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 CONFIG += c++11
-
+LIBS += -lpcap
 SOURCES += \
-        capturemanager.cpp \
+        guiutil.cpp \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        messagebox.cpp \
+        packetmanager.cpp \
+        selectinterfacewindow.cpp
 
 HEADERS += \
-        capturemanager.h \
-        mainwindow.h
+        guiutil.h \
+        mainwindow.h \
+        messagebox.h \
+        packetmanager.h \
+        selectinterfacewindow.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        selectinterfacewindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

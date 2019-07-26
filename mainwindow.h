@@ -5,6 +5,10 @@
 #include <string>
 #include <ifaddrs.h>
 #include <stdexcept>
+#include "packetmanager.h"
+#include "guiutil.h"
+#include "messagebox.h"
+#include "selectinterfacewindow.h"
 
 using namespace std;
 
@@ -19,12 +23,41 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    string getInterface();
+
+private slots:
+    void on_btnStart_clicked();
+    void on_btnStop_clicked();
+
+    void on_btnSelectInterface_clicked();
+
+    void on_btnPause_clicked();
 
 private:
+    class ErrorMessages
+    {
+    public:
+        string setLstInterface = "Failed to load network interfaces";
+    };
+
     Ui::MainWindow *ui;
-    bool initialize();
-    void setLstInterface();
+    GUIUtil util;
+    MessageBox messageBox;
+    ErrorMessages errorMessages;
+    SelectInterfaceWindow *selectInterfaceWindow = nullptr;
+    int selectedInterface;
+    vector<string> interfaces;
+    PacketManager capture;
+    u_char *packet;
+    uint size;
+
+    void initialize();
+    void showInterfaceSelection();
+    void hideInterfaceSelection();
+    void changeStateToStart();
+    void changeStateToPause();
+    void changeStateToStop();
+    void showMessage();
+    void onInterfaceSelected();
 };
 
 #endif // MAINWINDOW_H

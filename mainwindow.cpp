@@ -1,12 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <pcap/pcap.h>
 
+// GUI START
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    initialize();
 }
 
 MainWindow::~MainWindow()
@@ -14,29 +15,87 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-bool MainWindow::initialize()
+void MainWindow::initialize()
 {
-    setLstInterface();
+    try{
+        util.changeLocationToCenter(this);
+        capture.getInterfaces(&interfaces);
+        showInterfaceSelection();
+    }
+    catch(runtime_error e){
+        string message = e.what();
+        messageBox.Error(&message);
+    }
 }
 
-void MainWindow::setLstInterface()
+void MainWindow::showInterfaceSelection()
 {
-    ifaddrs *addrs;
-    int res = getifaddrs(&addrs);
+    if(selectInterfaceWindow == nullptr)
+        selectInterfaceWindow = new SelectInterfaceWindow(&interfaces, &selectedInterface, std::bind(&MainWindow::onInterfaceSelected,this));
 
-    if(res == -1) return;// trhow exception
-
-    string startAddr = addrs->ifa_name;
-    do
-    {
-        ui->lstInterface->addItem(QString(addrs->ifa_name));
-        addrs = addrs->ifa_next;
-    } while(addrs->ifa_name != startAddr);
+    this->setEnabled(false);
+    selectInterfaceWindow->show();
 }
 
-string MainWindow::getInterface()
+void MainWindow::hideInterfaceSelection()
 {
-    if(ui->lstInterface->selectedItems().length() < 1) return "";
-
-    return ui->lstInterface->selectedItems()[0]->text().toUtf8().constData();
+    this->setEnabled(true);
+    selectInterfaceWindow->hide();
 }
+
+void MainWindow::changeStateToStart()
+{
+    ui->btnStart->setEnabled(false);
+    ui->btnPause->setEnabled(true);
+    ui->btnStop->setEnabled(true);
+    ui->btnSelectInterface->setEnabled(false);
+}
+
+void MainWindow::changeStateToPause()
+{
+    ui->btnStart->setEnabled(true);
+    ui->btnPause->setEnabled(false);
+    ui->btnStop->setEnabled(true);
+    ui->btnSelectInterface->setEnabled(false);
+}
+
+void MainWindow::changeStateToStop()
+{
+    ui->btnStart->setEnabled(true);
+    ui->btnPause->setEnabled(false);
+    ui->btnStop->setEnabled(false);
+    ui->btnSelectInterface->setEnabled(true);
+
+    //reset listview
+}
+// GUI END
+
+// CALLBACKS START
+void MainWindow::onInterfaceSelected()
+{
+    hideInterfaceSelection();
+}
+// CALLBACKS END
+
+// EVENT START
+void MainWindow::on_btnStart_clicked()
+{
+    changeStateToStart();
+}
+
+void MainWindow::on_btnPause_clicked()
+{
+    changeStateToPause();
+}
+void MainWindow::on_btnStop_clicked()
+{
+    changeStateToStop();
+}
+
+void MainWindow::on_btnSelectInterface_clicked()
+{
+    showInterfaceSelection();
+}
+// EVENT END
+
+
